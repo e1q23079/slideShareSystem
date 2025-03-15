@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アラーム</title>
+    <style>
+        body{
+            background-color: azure;
+        }
+        .selecter{
+            background-color: rgb(201, 247, 247);
+            color: rgb(0, 0, 0);
+            font-weight: bold;
+            font-size: large;
+
+            font-size: large;
+            font-weight: bold;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .selecter2{
+            background-color: rgb(0, 234, 255);
+            color: rgb(0, 0, 0);
+            font-weight: bold;
+            font-size: large;
+
+            font-size: large;
+            font-weight: bold;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .selecter3{
+            background-color: rgb(48, 224, 224);
+            color: rgb(0, 0, 0);
+            font-weight: bold;
+            font-size: large;
+
+            font-size: large;
+            font-weight: bold;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        div{
+            color: rgb(0, 56, 135);
+            font-weight: bold;
+            font-size: xx-large;
+            text-align: center;
+        }
+        .st{
+            background-color: rgb(0, 179, 255);
+            color: rgb(253, 253, 253);
+            font-weight: bold;
+            font-size: large;
+
+            font-size: large;
+            font-weight: bold;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .block{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        progress{
+            width: 100%;
+            height: 30px;
+        }
+
+        nav{
+            width: 100%;
+            height: 35px;
+            background-color: rgb(67, 73, 201);
+            box-sizing: border-box;
+        }
+        .title{
+            color: white;
+            font-size: 25px;
+            text-align: center;
+            font-family: sans-serif;
+            font-weight: bold;
+        }
+        .text1{
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="title" id="mode">
+
+                タイマー
+
+        </div>
+    </nav>
+
+    
+
+    <div id="text1" class="text1">
+        00時間00分00秒
+    </div>
+
+    <div class="block">
+        <input type="button" onclick="tap(-1);" value="-1秒" class="selecter"/>
+        <input type="button" onclick="tap(1);" value="+1秒" class="selecter"/>   
+    </div>
+
+
+    <div class="block">
+        <input type="button" onclick="tap(-60);" value="-1分" class="selecter">
+        <input type="button" onclick="tap(60);" value="+1分" class="selecter">
+    </div>
+    
+    <div class="block">
+        <input type="button" onclick="tap(-60*5);" value="-5分" class="selecter">
+        <input type="button" onclick="tap(60*5);" value="5分" class="selecter">
+    </div>
+    
+    <div class="block">
+        <input type="button" onclick="tap(-3600);" value="-1時間" class="selecter">
+        <input type="button" onclick="tap(3600);" value="1時間" class="selecter">
+    </div>
+    
+    
+    <!--
+    
+    <input type="button" onclick="tap(60*3);" value="3分" class="selecter">
+    
+    <input type="button" onclick="tap(10*60);" value="10分" class="selecter">
+    <input type="button" onclick="tap(60*15);" value="15分" class="selecter">
+
+    <div class="block">
+        <input type="button" onclick="tap(-10);" value="-10秒" class="selecter"/>
+        <input type="button" onclick="tap(10);" value="10秒" class="selecter"/>
+    
+    </div>
+        <div class="block">
+        <input type="button" onclick="tap_timer();" value="タイマーモード" class="selecter3">
+        <input type="button" onclick="to_alarm();" value="アラームモード" class="selecter3">
+    </div>
+
+
+    -->
+    
+    <input type="button" onclick="test();" value="テスト再生" class="selecter3">
+
+
+    
+
+    
+
+
+    <div class="block">
+        <input type="button" onclick="reset();" value="リセット" class="st">
+        <input type="button" onclick="start();" value="確定" class="st">
+    </div>
+
+    
+
+
+
+
+
+
+
+
+    <script>
+        var times=0;
+
+
+        var MODE =1;    //1:タイマー 2:アラーム
+
+        //document.getElementById('mode').innerText="モード：タイマー"
+
+        //document.getElementById('mode').innerText="タイマー"
+
+        function tap_timer(){
+            MODE=1;
+            document.getElementById('mode').innerText="モード：タイマー"
+        }
+
+        function to_alarm(){
+            MODE=2;
+            document.getElementById('mode').innerText="モード：アラーム"
+        }
+
+        function test(){
+            const music = new Audio("alarm_music7.mp3");
+            music.play();
+            music.currentTime=0;
+        }
+
+
+        
+        function start(){
+            if(MODE==1){
+                window.location.replace("timer.html?"+times);
+            }else if(MODE==2){
+                window.location.replace("alarm.html?"+times);
+            }
+            
+        }
+
+        function reset(){
+            times=0;
+            
+            var hour=Math.trunc(times/3600);
+            var minute=Math.trunc((times-hour*3600)/60);
+            var second=Math.trunc(times-minute*60-hour*3600);
+
+            if(hour<10){
+                hour = "0" + hour;
+            }
+            if(minute<10){
+                minute = "0" + minute;
+            }
+            if(second<10){
+                second = "0" + second;
+            }
+
+            if(MODE==1){
+                document.getElementById("text1").innerText=hour+"時間"+minute+"分"+second+"秒";
+            }else if(MODE==2){
+                document.getElementById("text1").innerText=hour+"時"+minute+"分"+second+"秒";
+            }
+               
+        }
+
+        
+
+        
+ 
+        function tap(time){
+                times = times+time;
+
+                var hour=Math.trunc(times/3600);
+                var minute=Math.trunc((times-hour*3600)/60);
+                var second=Math.trunc(times-minute*60-hour*3600);
+
+                if(hour<10){
+                    hour = "0" + hour;
+                }
+                if(minute<10){
+                    minute = "0" + minute;
+                }
+                if(second<10){
+                    second = "0" + second;
+                }
+                
+                if(MODE==1){
+                    document.getElementById("text1").innerText=hour+"時間"+minute+"分"+second+"秒";
+                }else if(MODE==2){
+                    document.getElementById("text1").innerText=hour+"時"+minute+"分"+second+"秒";
+                }
+
+        }    
+    
+    </script>
+</body>
+</html>

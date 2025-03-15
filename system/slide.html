@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Slide</title>
+    <style>
+        .block1{
+            text-align: center;
+        }
+        /*
+        img{
+            position: absolute;
+        }
+        */
+        .point{
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+        
+    
+
+    <div class="block2">
+        <center><img src="" width="80%" id="slide" onerror="error();"/></center>
+    </div>
+
+    <center><button onclick="before();">前のスライド</button>  <button onclick="next();">次のスライド</button></center>
+
+    <!--<img class="point" src="point.png" width="30px" id="point"/>-->
+
+    
+    
+    <script>
+
+        //右クリックの禁止
+        document.oncontextmenu = function(){return false;}
+
+        var id = location.search.substr(1);
+
+        slide_file = id;
+
+        //スライド
+
+        nowSlideNum = 1;
+
+
+        slide_show(slide_file,nowSlideNum);
+
+        function before(){
+            if(nowSlideNum>1){
+                nowSlideNum--;
+            }
+            slide_show(slide_file,nowSlideNum);
+        }
+
+        function next(){
+            nowSlideNum++;
+            slide_show(slide_file,nowSlideNum);
+        }
+
+        document.addEventListener('keydown',function(event){
+            if(event.key=='ArrowLeft'){
+                if(nowSlideNum>1){
+                    nowSlideNum--;
+                }
+                slide_show(slide_file,nowSlideNum);
+            }else if(event.key=='ArrowRight'){
+                nowSlideNum++;
+                slide_show(slide_file,nowSlideNum);
+            }
+        });
+
+        function slide_show(file,slideNum){
+            slide = document.getElementById("slide");
+            slide.src = "../"+file+"/"+file+" ("+slideNum+")"+".PNG";
+        }
+
+        function error(){
+            if(nowSlideNum==1){
+                slide = document.getElementById("slide");
+                slide.src = "error.png";
+            }else{
+                slide = document.getElementById("slide");
+                slide.src = "finish.png";
+                nowSlideNum--;
+            }
+            
+        }
+
+        /*
+
+        //ポインタ
+
+        const curosrImg = document.getElementById("point");
+        
+        const mouseMove = (e) => {
+            curosrImg.style.top = `${e.clientY}px`;
+            curosrImg.style.left = `${e.clientX}px`;
+            console.log(`${e.clientY}px ${e.clientX}px`)
+        };
+
+        document.addEventListener("mousemove",(e)=>{
+            mouseMove(e);  
+        });
+
+        */
+
+    </script>
+</body>
+</html>

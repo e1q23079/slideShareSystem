@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Slide</title>
+    <link rel="stylesheet" href="style1.css">
+</head>
+<body>
+    <div class="block1">
+        <p>スライドコード</p>
+        <input type="text" id="slide_code">
+        <input type="button" value="確定" onclick="set();">
+    </div>
+    <script>
+        function set(){
+            slideCode = document.getElementById("slide_code").value;
+            window.location.replace(`system/slide_receiver.html?${slideCode}`);
+        }
+    </script>
+</body>
+</html>

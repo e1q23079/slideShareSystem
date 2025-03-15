@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Slide</title>
+    <style>
+        .block1{
+            text-align: center;
+        }
+        img{
+            position: absolute;
+        }
+        .point{
+            opacity: 0.5;
+        }
+        .timer{
+            font-weight: bold;
+            width: 980px;
+            position: absolute;
+            background-color: rgb(0, 88, 176);   
+            color: white;
+            padding: 10px;
+        }
+        .timer_title{
+            font-size: x-large;
+        }
+        .timer_time{
+            font-size: xx-large;
+        }
+
+        progress{
+            width: 100%;
+            height: 30px;
+        }
+
+    </style>
+</head>
+<body>
+        
+    <img src="waiting.png" width="1000px" id="slide" onclick="full();" onerror="error();"/>
+
+
+    <img class="point" src="point.png" width="30px" id="point"/>
+
+    <div class="timer" id="timer_block">
+        <center>
+            <span class="timer_title" id="timer_title">[タイマータイトル]</span>
+            <br>
+            <span class="timer_time" id="timer_time">XX時間XX分XX秒</span>
+        </center>
+    </div>
+
+    <script>
+
+        timer_off();
+
+        //ポインタ定義
+        var pointer = document.getElementById("point");
+        pointer.style.display = 'none';
+
+        //ポップアップ確認用
+        var loading_window = window.open("loading.png","slide_share");
+
+        function loading_close(){
+            loading_window.close();
+        }
+
+        setTimeout(loading_close,1000);
+
+        alert("画面のサイズは，ブラウザの設定で変更してください．");
+
+        var id = location.search.substr(1);
+
+        function full(){
+            //全画面表示
+            document.documentElement.requestFullscreen();
+        }
+        
+
+        //接続状況を判断
+        let connect_flag = false;
+
+        //右クリックの禁止
+        document.oncontextmenu = function(){return false;}
+
+        //スライド
+
+        nowSlideNum = 1;
+
+        slide_file = id;
+
+        var ws = new WebSocket("wss://cloud.achex.ca/share_slide_system");
+
+        ws.onopen = function(event){
+            ws.send(`{"auth":"${slide_file}","passwd":"1111"}`);
+            ws.send(`{"to":"server","mode":"request"}`);
+        };
+
+        //ポインタ
+
+        const curosrImg = document.getElementById("point");
+
+        //Windowを定義
+        var open_window;
+
+        ws.onmessage = function(event){
+            rec_data = event.data;
+            if(JSON.parse(rec_data).auth!="OK"){
+                if(JSON.parse(rec_data).mode=="slide"){
+                    rcv_slide = JSON.parse(rec_data).slide;
+                    slide_show(slide_file,rcv_slide);
+                }else if(JSON.parse(rec_data).mode=="point"){
+                    view_point();
+                    //console.log(`${JSON.parse(rec_data).point_y} ${JSON.parse(rec_data).point_x}`)
+                    curosrImg.style.top = `${JSON.parse(rec_data).point_y}px`;
+                    curosrImg.style.left = `${JSON.parse(rec_data).point_x}px`;
+                }else if(JSON.parse(rec_data).mode=="request"){
+                    slide_show(slide_file,JSON.parse(rec_data).slide_num);
+                }else if(JSON.parse(rec_data).mode=="mes"){
+                    alert(JSON.parse(rec_data).mes);
+                }else if(JSON.parse(rec_data).mode=="url"){
+                    open_window = window.open(JSON.parse(rec_data).url,"slide_share",'menubar=no');
+                    //open_window = window.open(JSON.parse(rec_data).url,"slide_share");
+                }else if(JSON.parse(rec_data).mode=="timer_on"){
+                    jData = JSON.parse(rec_data);
+                    timer_set(jData.title,jData.nowTime);
+                }else if(JSON.parse(rec_data).mode=="timer_off"){
+                    timer_off();
+                }else if(JSON.parse(rec_data).mode=="close"){
+                    open_window.close();
+                }
+                //open_window.close()より前に処理を書いておく
+            }
+        };
+      
+
+        //slide_show(slide_file,nowSlideNum);
+
+        function slide_show(file,slideNum){
+            slide = document.getElementById("slide");
+            slide.src = "../"+file+"/"+file+" ("+slideNum+")"+".PNG";
+        }
+
+        function error(){
+            if(nowSlideNum==1){
+                slide = document.getElementById("slide");
+                slide.src = "error.png";
+            }else{
+                slide = document.getElementById("slide");
+                slide.src = "finish.png";
+                nowSlideNum--;
+            }
+            
+        }
+
+        function view_point(){
+            pointer.style.display = 'block';
+        }
+
+        function timer_set(timerTitle,timerTime){
+            block = document.getElementById("timer_block");
+            block.style.display = 'block';
+            document.getElementById("timer_title").innerText = `[${timerTitle}]`;
+            document.getElementById("timer_time").innerText = timerTime;
+        }
+
+        function timer_off(){
+            block = document.getElementById("timer_block");
+            block.style.display = 'none';
+        }
+
+    </script>
+</body>
+</html>

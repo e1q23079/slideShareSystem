@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アラーム_スタート</title>
+    <style>
+        .text1{
+            font-weight: bold;
+            font-size: xx-large;
+            color: rgb(0, 119, 255);
+        }
+        .block{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        body{
+            /*height: 70vh;*/
+            padding-top: 25vh;
+            padding-bottom: 25vh;
+
+            background-color: azure;
+        }
+        progress{
+            width: 100%;
+            height: 30px;
+        }
+        .butn{
+            color: rgb(255, 255, 255);
+            background-color: rgb(0, 221, 255);
+            font-size: large;
+            font-weight: bold;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .selecter2{
+            background-color: rgb(0, 234, 255);
+            color: rgb(0, 0, 0);
+            font-weight: bold;
+            font-size: large;
+
+            font-size: large;
+            font-weight: bold;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="block">
+        <div id="text1" class="text1">
+            読み込み中
+        </div>
+    </div>
+
+    <div class="block">
+        <!--プログレスバー-->
+        <progress max="100" value="0" id="progres"></progress>
+    </div>
+
+    <div class="block">
+        <input type="button" value="スタート" onclick="start();" class="butn" id="btn1"/>
+    </div>
+
+
+
+
+    
+
+    
+
+    
+    <script>
+
+        var ws = new WebSocket("wss://cloud.achex.ca/share_slide_system");
+
+        var slide_file = window.localStorage.getItem("slide_file");
+
+        const music = new Audio("start.mp3");
+
+        
+
+        music.volume=1;
+
+        var time=10;
+
+        var id = location.search.substr(1,);
+
+       
+
+        time=id;
+
+        const progres = document.getElementById("progres");
+
+
+        var first_time = time;
+        //レメントをゲットしたら，maxとかvlueを変更できる．
+        progres.max=first_time;
+
+        var Mes_text;
+
+        document.getElementById("text1").innerText = time_chenge(first_time);
+
+        ws.onopen = function(event){
+            ws.send('{"auth":"server","passwd":"1111"}');
+            //ws.send(`{"to":"${slide_file}","mode":"timer_on"}`)
+            Mes_text = window.prompt("表示するメッセージを入力してください．");
+            ws.send(`{"to":"${slide_file}","mode":"timer_on","title":"${Mes_text}","nowTime":"${time_chenge(first_time)}"}`);
+        };
+
+
+        
+        //console.log(music.volume);
+
+        function audio(){  
+            //使用音源は7に確定
+            music.src="alarm_music7.mp3"; 
+            music.play();
+            music.currentTime=0;
+        }
+
+        function aduio_s(){
+            music.play();
+            music.currentTime=0;
+        }
+
+
+        var flag = false;
+
+        var timer;        
+        function start(){
+            if(flag==false){
+                aduio_s();
+                timer = setInterval(count_time,1000);
+                flag = true;
+                const btn_1 = document.getElementById('btn1');
+                btn_1.value="止める";
+            }else{
+
+                //止めるまえに，確認のダイアログを出すようにする
+                ws.send(`{"to":"${slide_file}","mode":"timer_off"}`);
+                window.location.replace("time_tool.html");
+
+            }
+            
+        }
+
+        function count_time(){
+            
+            console.log("実行状況");
+            if(time<=0){
+                clearInterval(timer);
+                document.getElementById("text1").innerText="時間が経過しました!!";
+                ws.send(`{"to":"${slide_file}","mode":"timer_on","title":"${Mes_text}","nowTime":"時間が経過しました!!"}`);
+                music.loop=true;
+                audio();
+            }else{ 
+                time--;
+                var hour=Math.trunc(time/3600);
+                var minute=Math.trunc((time-hour*3600)/60);
+                var second=Math.trunc(time-minute*60-hour*3600);
+
+                if(hour<10){
+                    hour = "0" + hour;
+                }
+                if(minute<10){
+                    minute = "0" + minute;
+                }
+                if(second<10){
+                    second = "0" + second;
+                }
+
+
+
+                //0の保管プログラムを書いておく
+
+                document.getElementById("text1").innerText=hour+"時間"+minute+"分"+second+"秒";
+                progres.value=(first_time-time);
+
+                timeText = hour+"時間"+minute+"分"+second+"秒";
+
+                ws.send(`{"to":"${slide_file}","mode":"timer_on","title":"${Mes_text}","nowTime":"${timeText}"}`);
+            }
+        }
+
+        
+        function time_chenge(){
+            var hour=Math.trunc(time/3600);
+            var minute=Math.trunc((time-hour*3600)/60);
+            var second=Math.trunc(time-minute*60-hour*3600);
+
+            if(hour<10){
+                hour = "0" + hour;
+            }
+            if(minute<10){
+                minute = "0" + minute;
+            }
+            if(second<10){
+                second = "0" + second;
+            }
+
+            return hour+"時間"+minute+"分"+second+"秒";
+
+
+        }
+        
+        window.addEventListener('beforeunload',function(e){
+            ws.send(`{"to":"${slide_file}","mode":"timer_off"}`);
+        });
+
+        
+        
+    </script>
+</body>
+</html>

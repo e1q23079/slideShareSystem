@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Slide</title>
+    <style>
+        .block1{
+            text-align: center;
+        }
+        img{
+            position: absolute;
+        }
+        .point{
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+    <img src="" width="1000px" id="slide" onclick="full();" onerror="error();"/>
+
+
+    <img class="point" src="point.png" width="30px" id="point"/>
+    
+    <script>
+
+
+        alert("画面のサイズは，ブラウザの設定で変更してください．");
+
+        var id = location.search.substr(1);
+            
+        function full(){
+            //全画面表示
+            document.documentElement.requestFullscreen();
+        }
+
+        //接続状況を判断
+        let connect_flag = false;
+
+        //右クリックの禁止
+        document.oncontextmenu = function(){return false;}
+
+        //スライド
+
+        nowSlideNum = 1;
+
+        slide_file = id;
+
+        
+        //ローカルストレージへ保存
+        window.localStorage.setItem("slide_file",slide_file);
+
+        var ws = new WebSocket("wss://cloud.achex.ca/share_slide_system");
+
+        ws.onopen = function(event){
+            ws.send('{"auth":"server","passwd":"1111"}');
+            connect_flag = true;
+            ws.send(`{"to":"${slide_file}","mode":"slide","slide":"${nowSlideNum}"}`);
+        };
+
+        slide_show(slide_file,nowSlideNum);
+        
+
+        document.addEventListener('keydown',function(event){
+            if(event.key=='ArrowLeft'){
+                if(nowSlideNum>1){
+                    nowSlideNum--;
+                }
+                slide_show(slide_file,nowSlideNum);
+            }else if(event.key=='ArrowRight'){
+                nowSlideNum++;
+                slide_show(slide_file,nowSlideNum)
+            }
+            //receiverへメッセージを送信する
+            ws.send(`{"to":"${slide_file}","mode":"slide","slide":"${nowSlideNum}"}`);
+        });
+
+        console.log("m:message u:open_url c:close_window");
+
+        document.addEventListener('keydown',function(event){
+            if(event.key=="m"){
+                mes = window.prompt("送信するメッセージを入力してください．");
+                if(mes!=null){
+                    send_mes(mes);
+                    alert("送信しました．");   
+                }
+            }else if(event.key=="u"){
+                url = window.prompt("開くウェブページのURLを入力してください．");
+                if(url!=null){
+                    open_url(url);
+                    alert("ページを開きました．");
+                }
+            }else if(event.key=="c"){
+                if(window.confirm("本当に開いたウインドウを閉じますか？")){
+                    close_window();
+                    alert("ページを閉じました.");
+                }
+            }else if(event.key=="t"){
+                open_timer();
+            }
+        });
+
+        function slide_show(file,slideNum){
+            slide = document.getElementById("slide");
+            slide.src = "../"+file+"/"+file+" ("+slideNum+")"+".PNG";
+        }
+
+        function error(){
+            if(nowSlideNum==1){
+                slide = document.getElementById("slide");
+                slide.src = "error.png";
+            }else{
+                slide = document.getElementById("slide");
+                slide.src = "finish.png";
+                nowSlideNum--;
+            }
+            
+        }
+
+        //ポインタ
+
+        const curosrImg = document.getElementById("point");
+        
+        const mouseMove = (e) => {
+            curosrImg.style.top = `${e.clientY}px`;
+            curosrImg.style.left = `${e.clientX}px`;
+            //console.log(`${e.clientY}px ${e.clientX}px`);
+            if(connect_flag==true){
+                ws.send(`{"to":"${slide_file}","mode":"point","point_y":"${e.clientY}","point_x":"${e.clientX}"}`);
+            }
+        };
+
+        document.addEventListener("mousemove",(e)=>{
+            mouseMove(e);  
+        });
+
+        ws.onmessage = function(event){
+            rec_data = event.data;
+            if(JSON.parse(rec_data).auth!="OK"){
+                if(JSON.parse(rec_data).mode=="request"){
+                    ws.send(`{"to":"${slide_file}","mode":"request","slide_num":"${nowSlideNum}"}`);
+                }
+            }
+        };
+
+        function send_mes(mes){
+            ws.send(`{"to":"${slide_file}","mode":"mes","mes":"${mes}"}`);
+            return "status ok";
+        }
+
+        function open_url(url){
+            ws.send(`{"to":"${slide_file}","mode":"url","url":"${url}"}`);
+            return "status ok";
+        }
+
+        function close_window(url){
+            ws.send(`{"to":"${slide_file}","mode":"close"}`);
+            return "status ok";
+        }
+
+        function open_timer(){
+            window.open("time_tool.html","Timer",'menubar=no');
+        }
+
+        console.log("send_mes  open_url close_window");
+
+    </script>
+</body>
+</html>
